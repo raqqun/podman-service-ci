@@ -15,13 +15,13 @@ RUN apt-get update -qq && \
     buildah
 
 
-RUN groupadd --gid 1000 podman \
-  && useradd --uid 1000 --gid podman --shell /bin/bash --create-home podman \
+RUN groupadd --gid 10000 podman \
+  && useradd --uid 10000 --gid podman --shell /bin/bash --create-home podman \
   && chmod u-s /usr/bin/new[gu]idmap \
   && setcap cap_setuid=ep /usr/bin/newuidmap \
   && setcap cap_setgid=ep /usr/bin/newgidmap \
-  && echo "1000:100000:6553600" > /etc/subuid \
-  && echo "1000:100000:6553600" > /etc/subgid \
+  && echo "10000:100000:6553600" > /etc/subuid \
+  && echo "10000:100000:6553600" > /etc/subgid \
   && mkdir -p /home/podman/.local/share/containers \
   && chown -R podman:podman /home/podman/.local/share/containers \
   && chmod 1755 /home/podman/.local/share/containers
