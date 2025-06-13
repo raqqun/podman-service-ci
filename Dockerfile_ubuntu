@@ -1,0 +1,39 @@
+FROM ubuntu:noble
+
+ARG PORT=8888
+
+RUN apt-get update -qq && \
+    apt-get install -qq -y \
+    libcap2-bin \
+    libvshadow-utils \
+    uidmap \
+    passt \
+    slirp4netns \
+    fuse-overlayfs \
+    crun \
+    podman \
+    buildah
+
+
+RUN groupadd --gid 1000 podman \
+  && useradd --uid 1000 --gid podman --shell /bin/bash --create-home podman \
+  && chmod u-s /usr/bin/new[gu]idmap \
+  && setcap cap_setuid=ep /usr/bin/newuidmap \
+  && setcap cap_setgid=ep /usr/bin/newgidmap \
+  && echo "1000:100000:6553600" > /etc/subuid \
+  && echo "1000:100000:6553600" > /etc/subgid \
+  && mkdir -p /home/podman/.local/share/containers \
+  && chown -R podman:podman /home/podman/.local/share/containers \
+  && chmod 1755 /home/podman/.local/share/containers
+
+VOLUME /home/podman/.local/share/containers
+
+COPY --chown=podman:podman conf/ /home/podman/.config/containers/
+
+
+USER podman
+
+EXPOSE $PORT
+
+ENTRYPOINT ["/usr/bin/podman"]
+CMD ["system", "service", "--time=0", "tcp:0.0.0.0:$PORT"]
